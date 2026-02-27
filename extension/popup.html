@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MaintAIn</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="popup">
+      <h1>MaintAIn</h1>
+
+      <section class="card timer-card">
+        <p class="section-title">Studying timer</p>
+        <p id="studying-timer" class="studying-timer">00:00</p>
+        <p id="timer-state" class="state-line">Timer: Loading...</p>
+      </section>
+
+      <section class="card websites-card">
+        <p class="section-title">Top 5 websites</p>
+        <ul id="website-list" class="website-list">
+          <li class="empty">No website activity yet.</li>
+        </ul>
+      </section>
+
+      <section class="controls card">
+        <div class="button-grid">
+          <button id="btn-start" class="btn btn-primary" type="button">Start</button>
+          <button id="btn-stop" class="btn btn-danger" type="button">Stop</button>
+          <button id="btn-pause" class="btn btn-warning" type="button">Pause</button>
+          <button id="btn-resume" class="btn btn-success" type="button">Resume</button>
+        </div>
+      </section>
+
+      <button id="open-dashboard" class="btn btn-primary dashboard" type="button">Open Dashboard</button>
+
+      <p class="privacy">Privacy: no full URL logging, only hostname aggregation.</p>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

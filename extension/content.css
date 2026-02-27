@@ -1,0 +1,141 @@
+#campusflow-start-modal.cf-start-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  pointer-events: none;
+  padding: 16px;
+}
+
+#campusflow-start-modal .cf-start-card {
+  width: 330px;
+  max-width: 92vw;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 14px 30px rgba(2, 6, 23, 0.2);
+  padding: 18px;
+  position: relative;
+  pointer-events: auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+}
+
+#campusflow-start-modal .cf-start-close {
+  all: unset;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  max-width: 28px;
+  max-height: 28px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  line-height: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+#campusflow-start-modal .cf-start-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+#campusflow-start-modal .cf-start-body {
+  margin: 10px 0 6px;
+  font-size: 14px;
+  color: #334155;
+}
+
+#campusflow-start-modal .cf-start-domain {
+  margin: 0 0 14px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+#campusflow-start-modal .cf-start-actions {
+  display: flex;
+  gap: 8px;
+}
+
+#campusflow-start-modal .cf-btn {
+  flex: 1;
+  border-radius: 10px;
+  padding: 9px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#campusflow-start-modal .cf-btn-primary {
+  border: 1px solid #1d4ed8;
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+#campusflow-start-modal .cf-btn-secondary {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #334155;
+}
+
+#campusflow-toast-container.cf-toast-container {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 2147483647;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+#campusflow-toast-container .cf-toast {
+  min-width: 220px;
+  max-width: 320px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+  padding: 10px 12px;
+  font-size: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#campusflow-toast-container .cf-toast-paused {
+  border-left: 4px solid #b91c1c;
+}
+
+#campusflow-toast-container .cf-toast-resumed {
+  border-left: 4px solid #15803d;
+}
+
+#campusflow-toast-container .cf-toast-exit {
+  opacity: 0;
+  transform: translateY(8px);
+}
