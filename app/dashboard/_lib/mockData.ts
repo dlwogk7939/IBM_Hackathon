@@ -6,7 +6,7 @@ import {
   processCourseStats, processDigest, processStudyPlan,
   processExtensionStatus, processStudyStreak,
   processKPIs, processEngagement, processHeatmap,
-  processAlerts, processEngagementTrend, processROI, processScalability,
+  processAlerts, processEngagementTrend, processScalability,
 } from './ilap-processors';
 
 const CURRENT_STUDENT = 'stu-001';
@@ -30,5 +30,4 @@ export const engagementRows = processEngagement(ilapDB);
 export const heatmapData = processHeatmap(ilapDB);
 export const alerts = processAlerts(ilapDB);
 export const engagementTrend = processEngagementTrend(ilapDB);
-export const roiMetrics = processROI(ilapDB);
 export const scalabilityMetrics = processScalability();

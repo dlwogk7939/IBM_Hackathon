@@ -40,7 +40,6 @@ const initialEducatorData = {
   heatmap: mock.heatmapData,
   alerts: mock.alerts,
   trend: mock.engagementTrend,
-  roi: mock.roiMetrics,
   scalability: mock.scalabilityMetrics,
 };
 

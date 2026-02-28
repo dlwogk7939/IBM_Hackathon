@@ -5,7 +5,7 @@ import type {
   ProductivityDay, FocusCell, CourseStats, DigestItem, StudyPlan,
   ExtensionStatus, StudyStreak,
   DepartmentKPI, EngagementRow, HeatmapCell, AlertItem,
-  EngagementPoint, ROIMetrics, ScalabilityMetrics,
+  EngagementPoint, ScalabilityMetrics,
 } from './types';
 
 /* ── Shared helpers ── */
@@ -860,19 +860,6 @@ export function processEngagementTrend(db: ILAPDatabase): EngagementPoint[] {
 
     return { week: label, engagement, burnout };
   });
-}
-
-/** Derived from enrollment counts + engagement trends */
-export function processROI(db: ILAPDatabase): ROIMetrics {
-  const totalEnrollments = db.enrollments.length;
-  const scaleFactor = 12.4; // simulate larger institution
-
-  return {
-    costPerStudent: Math.round((42000 / (totalEnrollments * scaleFactor)) * 10) / 10,
-    projectedSavings: Math.round(totalEnrollments * scaleFactor * 367),
-    retentionLift: 12,
-    avgInterventionTime: 45,
-  };
 }
 
 /** Static infrastructure metrics */

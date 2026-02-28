@@ -111,13 +111,6 @@ export interface EngagementPoint {
   burnout: number;
 }
 
-export interface ROIMetrics {
-  costPerStudent: number;
-  projectedSavings: number;
-  retentionLift: number;
-  avgInterventionTime: number;
-}
-
 export interface ScalabilityMetrics {
   activeUsers: number;
   peakConcurrent: number;

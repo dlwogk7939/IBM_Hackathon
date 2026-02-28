@@ -2,7 +2,6 @@
 
 import { ShieldCheck } from 'lucide-react';
 import DepartmentStats from './DepartmentStats';
-import ROIMetrics from './ROIMetrics';
 import ScalabilityMetrics from './ScalabilityMetrics';
 import EngagementTable from './EngagementTable';
 import CohortBurnoutHeatmap from './CohortBurnoutHeatmap';
@@ -23,11 +22,7 @@ export default function EducatorDashboard() {
 
       <DepartmentStats />
 
-      {/* ROI + Scalability side by side */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <ROIMetrics />
-        <ScalabilityMetrics />
-      </div>
+      <ScalabilityMetrics />
 
       <EngagementTable />
 

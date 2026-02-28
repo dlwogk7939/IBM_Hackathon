@@ -47,12 +47,15 @@ export function BurnoutGauge() {
             style={{ transition: 'stroke-dashoffset 1s ease-out' }}
           />
         </svg>
-        <p className="mt-2 text-3xl font-bold" style={{ color }}>{burnout.score}</p>
+        <p className="mt-2 text-3xl font-bold" style={{ color }}>{Math.round(burnout.score)}</p>
         <p className="text-xs text-slate-400">
           {burnout.trend === 'rising' ? '↑' : burnout.trend === 'falling' ? '↓' : '→'}{' '}
-          {fmtChange(burnout.weeklyChange)} this week
+          {fmtChange(Math.round(burnout.weeklyChange))} this week
         </p>
       </div>
+      <p className="mt-3 text-[10px] leading-relaxed text-slate-500">
+        Combines overwork hours, focus decay, sleep disruption, deadline pressure, recovery deficit, and workload imbalance — six behavioral signals with research-informed weights.
+      </p>
     </GlassCard>
   );
 }
