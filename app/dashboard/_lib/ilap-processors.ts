@@ -57,7 +57,105 @@ function weekStart(weeksAgo: number): Date {
    STUDENT PROCESSORS
    ═══════════════════════════════════════════ */
 
-/** Avg workloadScore last 7 days → score; compare to prior 7 → trend/weeklyChange */
+/* ── Burnout sub-score helpers ── */
+
+function clampScore(v: number): number {
+  return Math.max(0, Math.min(100, Math.round(v)));
+}
+
+/** Overwork (25 %): weekly study hours vs 50 h ceiling */
+function overworkScore(summaries: { studyMinutes: number }[]): number {
+  const weeklyHours = summaries.reduce((s, x) => s + x.studyMinutes, 0) / 60;
+  return clampScore((weeklyHours / 50) * 100);
+}
+
+/** Focus Decay (20 %): inverted avg focus + drop-penalty if declining */
+function focusDecayScore(
+  last7: { focusScore: number }[],
+  prev7: { focusScore: number }[],
+): number {
+  const avgFocus = last7.length
+    ? last7.reduce((s, x) => s + x.focusScore, 0) / last7.length
+    : 75;
+  const prevFocus = prev7.length
+    ? prev7.reduce((s, x) => s + x.focusScore, 0) / prev7.length
+    : avgFocus;
+  const dropPenalty = prevFocus > avgFocus ? (prevFocus - avgFocus) * 0.8 : 0;
+  return clampScore((1 - avgFocus / 100) * 100 + dropPenalty);
+}
+
+/** Sleep Disruption (20 %): late-night sessions (22-04) in last 7 days */
+function sleepDisruptionScore(sessions: ILAPActivitySession[]): number {
+  let total = 0;
+  const twoDaysAgo = new Date(TODAY);
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+  for (const s of sessions) {
+    const d = toDate(s.startedAt);
+    const h = d.getHours();
+    if (h >= 22 || h < 4) {
+      total += 20;
+      if (d >= twoDaysAgo) total += 5; // recent bonus
+    }
+  }
+  return clampScore(total);
+}
+
+/** Deadline Pressure (15 %): points / days-until-due for assignments due within 7 d */
+function deadlinePressureScore(db: ILAPDatabase, sid: string): number {
+  const courseIds = enrolledCourseIds(db, sid);
+  const sevenOut = new Date(TODAY);
+  sevenOut.setDate(sevenOut.getDate() + 7);
+
+  let pressure = 0;
+  for (const a of db.assignments) {
+    if (!courseIds.includes(a.courseId)) continue;
+    const due = toDate(a.dueAt);
+    if (due < TODAY || due > sevenOut) continue;
+    const daysLeft = Math.max(1, daysBetween(TODAY, due));
+    pressure += a.pointsPossible / daysLeft;
+  }
+  // Scale factor: 30 pressure-points → 100
+  return clampScore(pressure * (100 / 30));
+}
+
+/** Recovery Deficit (10 %): consecutive study days counting back from today */
+function recoveryDeficitScore(summaries: { date: string; studyMinutes: number }[]): number {
+  const sorted = [...summaries].sort((a, b) => b.date.localeCompare(a.date));
+  let consecutive = 0;
+  for (const s of sorted) {
+    if (s.studyMinutes > 0) consecutive++;
+    else break;
+  }
+  return clampScore((consecutive - 5) * 15);
+}
+
+/** Workload Imbalance (10 %): coefficient of variation of per-course weekly hours */
+function workloadImbalanceScore(db: ILAPDatabase, sid: string): number {
+  const courseIds = enrolledCourseIds(db, sid);
+  if (courseIds.length < 2) return 0;
+
+  const weekAgo = new Date(TODAY);
+  weekAgo.setDate(weekAgo.getDate() - 6);
+  weekAgo.setHours(0, 0, 0, 0);
+
+  const sessions = studentSessions(db, sid, weekAgo, TODAY);
+  const hoursByCourse: Record<string, number> = {};
+  for (const cid of courseIds) hoursByCourse[cid] = 0;
+  for (const s of sessions) {
+    if (hoursByCourse[s.courseId] !== undefined) {
+      hoursByCourse[s.courseId] += s.durationMin / 60;
+    }
+  }
+
+  const vals = Object.values(hoursByCourse);
+  const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+  if (mean === 0) return 0;
+  const variance = vals.reduce((s, v) => s + (v - mean) ** 2, 0) / vals.length;
+  const cv = Math.sqrt(variance) / mean; // coefficient of variation
+  return clampScore(cv * 150);
+}
+
+/** Multi-signal burnout index — weighted composite of 6 behavioural factors */
 export function processBurnout(db: ILAPDatabase, sid: string): BurnoutReading {
   const summaries = db.studentDailySummaries.filter(s => s.studentId === sid);
 
@@ -70,12 +168,49 @@ export function processBurnout(db: ILAPDatabase, sid: string): BurnoutReading {
     return daysBetween(d, TODAY) >= 7 && daysBetween(d, TODAY) < 14;
   });
 
-  const avg = (arr: typeof summaries) =>
-    arr.length ? Math.round(arr.reduce((s, x) => s + x.workloadScore, 0) / arr.length) : 50;
+  const weekAgo = new Date(TODAY);
+  weekAgo.setDate(weekAgo.getDate() - 6);
+  weekAgo.setHours(0, 0, 0, 0);
+  const recentSessions = studentSessions(db, sid, weekAgo, TODAY);
 
-  const current = avg(last7);
-  const previous = avg(prev7);
-  const change = current - previous;
+  // Six sub-scores
+  const overwork    = overworkScore(last7);
+  const focusDecay  = focusDecayScore(last7, prev7);
+  const sleep       = sleepDisruptionScore(recentSessions);
+  const deadline    = deadlinePressureScore(db, sid);
+  const recovery    = recoveryDeficitScore(summaries);
+  const imbalance   = workloadImbalanceScore(db, sid);
+
+  // Weighted composite
+  const current = clampScore(
+    overwork   * 0.25 +
+    focusDecay * 0.20 +
+    sleep      * 0.20 +
+    deadline   * 0.15 +
+    recovery   * 0.10 +
+    imbalance  * 0.10,
+  );
+
+  // Trend: compare to same composite using prev7 window as "last7"
+  const prev14 = summaries.filter(s => {
+    const d = toDate(s.date);
+    return daysBetween(d, TODAY) >= 14 && daysBetween(d, TODAY) < 21;
+  });
+  const twoWeeksAgo = new Date(TODAY);
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 13);
+  twoWeeksAgo.setHours(0, 0, 0, 0);
+  const prevSessions = studentSessions(db, sid, twoWeeksAgo, weekAgo);
+
+  const prevComposite = clampScore(
+    overworkScore(prev7)                   * 0.25 +
+    focusDecayScore(prev7, prev14)         * 0.20 +
+    sleepDisruptionScore(prevSessions)     * 0.20 +
+    deadline                               * 0.15 + // deadlines don't shift retroactively
+    recoveryDeficitScore(prev7)            * 0.10 +
+    imbalance                              * 0.10,  // imbalance is current-week only
+  );
+
+  const change = current - prevComposite;
 
   return {
     score: current,

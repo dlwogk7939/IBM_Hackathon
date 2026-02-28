@@ -64,11 +64,20 @@ function clamp(value: number, min: number, max: number): number {
 /* ── Blend functions ── */
 
 export function blendBurnout(base: BurnoutReading, ext: ExtensionSyncData): BurnoutReading {
-  const extensionHours = ext.totalStudySeconds / 3600;
-  const adjustment = extensionHours > 6 ? 5 : extensionHours > 4 ? 2 : -3;
-  const score = clamp(base.score + adjustment, 0, 100);
+  const totalSeconds = Object.values(ext.websiteTotals).reduce((s, v) => s + v, 0);
+  const distractingSeconds = sumWebsiteSeconds(ext.websiteTotals, d => classifyDomain(d) === 'distracting');
+  const distractionRatio = totalSeconds > 0 ? distractingSeconds / totalSeconds : 0;
 
-  // If timer is running after 10 PM, burnout trend is rising
+  // Distraction adjustment: high distraction % adds to burnout (max +10)
+  const distractionAdj = distractionRatio * 20; // 50 % distracted → +10
+
+  // Continuous session penalty: >3 h without pause adds to overwork factor
+  const extensionHours = ext.totalStudySeconds / 3600;
+  const continuousAdj = extensionHours > 3 ? Math.min(8, (extensionHours - 3) * 2.5) : 0;
+
+  const score = clamp(base.score + distractionAdj + continuousAdj, 0, 100);
+
+  // Late-night trend override: timer running after 10 PM → rising
   const currentHour = new Date().getHours();
   const trend: BurnoutReading['trend'] =
     ext.timerState === 'RUNNING' && currentHour >= 22
