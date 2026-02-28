@@ -15,6 +15,13 @@ import {
   Lock,
   Globe,
   FileText,
+  BookOpen,
+  PenTool,
+  FlaskConical,
+  Lightbulb,
+  Clock,
+  Atom,
+  Ruler,
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -422,6 +429,46 @@ function WideFocusHeatmap() {
   );
 }
 
+/* ── Scattered Blurred Educational Icons ── */
+
+const FLOATING_ICONS = [
+  { Icon: BookOpen,     top: '5%',  left: '4%',  size: 64, rotate: -15, opacity: 0.04 },
+  { Icon: Atom,         top: '8%',  right: '6%', size: 56, rotate: 20,  opacity: 0.035 },
+  { Icon: PenTool,      top: '18%', left: '8%',  size: 44, rotate: 30,  opacity: 0.04 },
+  { Icon: FlaskConical, top: '24%', right: '5%', size: 52, rotate: -10, opacity: 0.03 },
+  { Icon: Lightbulb,    top: '35%', left: '3%',  size: 48, rotate: 12,  opacity: 0.04 },
+  { Icon: Clock,        top: '38%', right: '4%', size: 40, rotate: -25, opacity: 0.035 },
+  { Icon: Ruler,        top: '50%', left: '6%',  size: 52, rotate: 45,  opacity: 0.03 },
+  { Icon: BookOpen,     top: '55%', right: '7%', size: 44, rotate: -8,  opacity: 0.035 },
+  { Icon: Atom,         top: '65%', left: '5%',  size: 48, rotate: 15,  opacity: 0.04 },
+  { Icon: FlaskConical, top: '72%', right: '3%', size: 56, rotate: -20, opacity: 0.03 },
+  { Icon: Lightbulb,    top: '82%', left: '7%',  size: 40, rotate: 22,  opacity: 0.035 },
+  { Icon: PenTool,      top: '88%', right: '6%', size: 48, rotate: -35, opacity: 0.04 },
+] as const;
+
+function ScatteredIcons() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      {FLOATING_ICONS.map(({ Icon, top, size, rotate, opacity, ...pos }, i) => (
+        <Icon
+          key={i}
+          className="absolute text-[#306CB5]"
+          style={{
+            top,
+            left: 'left' in pos ? pos.left : undefined,
+            right: 'right' in pos ? pos.right : undefined,
+            width: size,
+            height: size,
+            opacity,
+            transform: `rotate(${rotate}deg)`,
+            filter: 'blur(6px)',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════
    MAIN PAGE
    ═══════════════════════════════════════════════════════════════ */
@@ -451,6 +498,7 @@ export default function LandingPage() {
 
   return (
     <div ref={pageRef} className="relative bg-[#1A1F2E] text-slate-100">
+      <ScatteredIcons />
       {/* ── Global styles ── */}
       <style>{`
         html { scroll-behavior: smooth; }
