@@ -1,13 +1,15 @@
-# CampusFlow
+# maintAIn
 
-CampusFlow is a local-first Next.js demo app that modernizes university workflows with deterministic logic and mock data only.
+AI-powered study intelligence platform. A Chrome extension that tracks focus, flags late-night spikes, and maps deadline pressure — with an institutional dashboard for educators.
 
 ## Stack
 - Next.js 14 (App Router)
 - TypeScript
 - Tailwind CSS
+- Framer Motion
 - Recharts
-- Local state/localStorage only (no database, no external AI/LLM services)
+- IBM WatsonX / Granite (AI insights)
+- IBM Cloud (infrastructure)
 
 ## Run
 1. Install dependencies:
@@ -22,24 +24,14 @@ npm install
 npm run dev
 ```
 
-3. Open `http://localhost:3000`.
+3. Open `http://localhost:3000` (redirects to landing page).
 
 ## Demo flows
-1. Landing page (`/`): choose Student Portal or Admin Dashboard.
-2. Student login (`/student`): enter `S1001`-style ID (format `S####`).
-3. Student home (`/student/home`):
-- select a syllabus template and optionally upload a PDF
-- click **Extract Deadlines** (mock deterministic extraction)
-- inspect extracted JSON, deadlines table, weekly planner, risk score, and coaching tips
-- open **Share my ID** modal to display anonymized code
-4. Admin login (`/admin`): passcode is `admin123`.
-5. Admin dashboard (`/admin/dashboard`):
-- view week filter (Week 1-15)
-- KPI cards, risk distribution, average trend, and course clustering charts
-- tables for high-risk students (ID-only) and clustered courses
-- rule-based intervention suggestions
+1. **Landing page** (`/landing`): product overview with burnout gauge, heatmap, and feature highlights.
+2. **Student dashboard** (`/dashboard`): burnout index, study distribution, deadline clustering, time allocation, productivity ratio with focus heatmap, per-course stats, and AI weekly digest.
+3. **Educator dashboard** (`/dashboard` → toggle to Educator): FERPA-compliant cohort view with department KPIs, ROI metrics, scalability stats, engagement table, burnout heatmap, at-risk alerts, engagement trends, and competitor comparison.
 
-## Privacy behavior
-- Admin dashboard shows anonymized Student IDs only (`S1001`...`S1020`).
-- No student names appear in admin views.
-- "Share my ID" is local display only and does not transmit data.
+## Privacy
+- Educator dashboard shows anonymized cohort data only.
+- Individual student data is architecturally isolated from the educator view.
+- FERPA compliant by design.
