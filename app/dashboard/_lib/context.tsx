@@ -2,13 +2,14 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import * as mock from './mockData';
+import { useExtensionSync, type ExtensionSyncData } from './useExtensionSync';
 
 export type Role = 'student' | 'educator';
 
 interface DashboardState {
   role: Role;
   setRole: (r: Role) => void;
-  student: typeof initialStudentData;
+  student: typeof initialStudentData & { extensionLive: ExtensionSyncData };
   educator: typeof initialEducatorData;
 }
 
@@ -57,6 +58,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<Role>('student');
   const [studentData, setStudentData] = useState(initialStudentData);
   const [educatorData, setEducatorData] = useState(initialEducatorData);
+  const extensionLive = useExtensionSync();
 
   useEffect(() => {
     // Build analytics context from processor data
@@ -128,8 +130,21 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const mergedStudent = {
+    ...studentData,
+    extensionLive,
+    extensionStatus: extensionLive.connected
+      ? {
+          connected: true,
+          lastSync: extensionLive.lastSync,
+          browser: 'Chrome',
+          version: extensionLive.version,
+        }
+      : studentData.extensionStatus,
+  };
+
   return (
-    <Ctx.Provider value={{ role, setRole, student: studentData, educator: educatorData }}>
+    <Ctx.Provider value={{ role, setRole, student: mergedStudent, educator: educatorData }}>
       {children}
     </Ctx.Provider>
   );

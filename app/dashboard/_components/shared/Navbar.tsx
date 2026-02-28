@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useDashboard, type Role } from '../../_lib/context';
 import { cn } from '../../_lib/utils';
 
@@ -13,9 +14,9 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0F1219]/80 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <span className="text-lg font-bold tracking-tight text-white">
+        <Link href="/landing" className="text-lg font-bold tracking-tight text-white hover:opacity-80 transition-opacity">
           maint<span className="text-[#306CB5]">AI</span>n
-        </span>
+        </Link>
         <div className="flex gap-1 rounded-lg bg-white/5 p-1">
           {roles.map((r) => (
             <button

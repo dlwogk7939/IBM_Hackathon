@@ -103,6 +103,43 @@
     document.documentElement.appendChild(overlay);
   }
 
+  /* ── Dashboard postMessage bridge ── */
+
+  function isDashboardPage() {
+    return window.location.pathname.startsWith("/dashboard");
+  }
+
+  function postStudyDataToPage() {
+    chrome.runtime.sendMessage({ type: "GET_POPUP_DATA" }, (response) => {
+      if (chrome.runtime.lastError || !response || !response.ok) return;
+      window.postMessage({
+        type: "MAINTAIN_EXTENSION_DATA",
+        payload: {
+          connected: true,
+          timerState: response.timerState,
+          totalStudySeconds: response.totalStudySeconds,
+          websiteTotals: response.websiteTotals,
+          version: chrome.runtime.getManifest().version,
+        },
+      }, "*");
+    });
+  }
+
+  if (isDashboardPage()) {
+    // Initial sync after short delay to let React hydrate
+    setTimeout(postStudyDataToPage, 500);
+    // Periodic sync every 2 seconds
+    setInterval(postStudyDataToPage, 2000);
+  }
+
+  // Listen for on-demand sync requests from the dashboard page
+  window.addEventListener("message", (event) => {
+    if (event.source !== window) return;
+    if (event.data && event.data.type === "MAINTAIN_REQUEST_DATA") {
+      postStudyDataToPage();
+    }
+  });
+
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!message || typeof message !== "object") return;
 

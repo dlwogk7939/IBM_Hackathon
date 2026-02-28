@@ -533,14 +533,16 @@ export default function LandingPage() {
           {/* Right CTAs */}
           <div className="flex items-center gap-3">
             <a
-              href="#"
+              href="/dashboard"
               className="landing-focus text-sm text-slate-400 hover:text-white transition"
               aria-label="Log in"
             >
               Log in
             </a>
             <a
-              href="#"
+              href="https://github.com/dlwogk7939/IBM_Hackathon/tree/main/extension"
+              target="_blank"
+              rel="noopener noreferrer"
               className="landing-focus text-sm font-semibold px-4 py-2 rounded-md bg-[#306CB5] text-white hover:bg-[#4A8AD4] transition"
               aria-label="Add to Chrome"
             >
@@ -576,7 +578,9 @@ export default function LandingPage() {
           {/* CTAs */}
           <div className="fade-up mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
-              href="#"
+              href="https://github.com/dlwogk7939/IBM_Hackathon/tree/main/extension"
+              target="_blank"
+              rel="noopener noreferrer"
               className="landing-focus px-6 py-3 bg-[#306CB5] text-white font-semibold rounded-md hover:bg-[#4A8AD4] transition"
               aria-label="Add to Chrome for free"
             >
@@ -1059,14 +1063,16 @@ export default function LandingPage() {
         </p>
         <div className="fade-up mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
-            href="#"
+            href="/dashboard"
             className="landing-focus inline-block px-8 py-4 bg-[#306CB5] text-white font-semibold text-lg rounded-md hover:bg-[#4A8AD4] transition"
             aria-label="Try the live demo"
           >
             Live Demo
           </a>
           <a
-            href="#"
+            href="https://github.com/dlwogk7939/IBM_Hackathon"
+            target="_blank"
+            rel="noopener noreferrer"
             className="landing-focus inline-flex items-center gap-2 px-8 py-4 rounded-md font-semibold text-lg transition border border-[#306CB5] text-[#306CB5] hover:bg-[#306CB5]/10"
             aria-label="View on GitHub"
           >

@@ -19,7 +19,8 @@ const DISTRACTING_DOMAINS = [
   "www.youtube.com"
 ];
 
-const DASHBOARD_URL = "https://naver.com";
+// Update this URL when deployed (e.g., to IBM Code Engine URL)
+const DASHBOARD_URL = "http://localhost:3000/dashboard";
 
 const TIMER_STATES = {
   RUNNING: "RUNNING",
