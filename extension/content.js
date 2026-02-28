@@ -1,6 +1,21 @@
 (function () {
   const START_MODAL_ID = "campusflow-start-modal";
   const TOAST_CONTAINER_ID = "campusflow-toast-container";
+  const MINI_POPUP_ID = "campusflow-mini-popup";
+
+  function safeRuntimeSendMessage(message) {
+    if (!chrome.runtime || !chrome.runtime.id) {
+      return;
+    }
+
+    try {
+      chrome.runtime.sendMessage(message, () => {
+        void chrome.runtime.lastError;
+      });
+    } catch {
+      // Ignore extension reload races.
+    }
+  }
 
   function removeStartModal() {
     const existing = document.getElementById(START_MODAL_ID);
@@ -10,6 +25,8 @@
   }
 
   function ensureToastContainer() {
+    if (!document.documentElement) return null;
+
     let container = document.getElementById(TOAST_CONTAINER_ID);
     if (container) return container;
 
@@ -23,20 +40,46 @@
 
   function showToast(kind, message) {
     const container = ensureToastContainer();
+    if (!container) return;
 
     const toast = document.createElement("div");
-    toast.className = `cf-toast ${kind === "PAUSED" ? "cf-toast-paused" : "cf-toast-resumed"}`;
+    toast.className = `cf-toast ${kind === "PAUSED" ? "cf-toast-paused" : "cf-toast-resumed"} cf-auto-dismiss`;
     toast.textContent = message;
 
     container.appendChild(toast);
+    while (container.childElementCount > 3) {
+      container.firstElementChild?.remove();
+    }
+  }
 
-    window.setTimeout(() => {
-      toast.classList.add("cf-toast-exit");
-      window.setTimeout(() => toast.remove(), 220);
-    }, 2600);
+  function showMiniPopup(titleText, bodyText) {
+    if (!document.documentElement) return;
+
+    const existing = document.getElementById(MINI_POPUP_ID);
+    if (existing) {
+      existing.remove();
+    }
+
+    const popup = document.createElement("aside");
+    popup.id = MINI_POPUP_ID;
+    popup.className = "cf-mini-popup cf-auto-dismiss";
+
+    const title = document.createElement("p");
+    title.className = "cf-mini-title";
+    title.textContent = titleText;
+
+    const body = document.createElement("p");
+    body.className = "cf-mini-body";
+    body.textContent = bodyText;
+
+    popup.appendChild(title);
+    popup.appendChild(body);
+    document.documentElement.appendChild(popup);
   }
 
   function showStartModal(domain, mode) {
+    if (!document.documentElement) return;
+
     removeStartModal();
 
     const overlay = document.createElement("div");
@@ -78,7 +121,7 @@
     notNowBtn.textContent = "Not now";
 
     const dismiss = () => {
-      chrome.runtime.sendMessage({ type: "USER_DISMISS_START" });
+      safeRuntimeSendMessage({ type: "USER_DISMISS_START" });
       removeStartModal();
     };
 
@@ -86,7 +129,7 @@
     notNowBtn.addEventListener("click", dismiss);
 
     startBtn.addEventListener("click", () => {
-      chrome.runtime.sendMessage({ type: "USER_START" });
+      safeRuntimeSendMessage({ type: "USER_START" });
       removeStartModal();
     });
 
@@ -122,7 +165,11 @@
             ? "Study timer paused (distracting site)."
             : "Resumed study timer.";
 
-      showToast(kind, text);
+      if (kind === "PAUSED") {
+        showMiniPopup("Auto distraction detected", text);
+      } else {
+        showToast(kind, text);
+      }
       sendResponse({ ok: true });
     }
   });

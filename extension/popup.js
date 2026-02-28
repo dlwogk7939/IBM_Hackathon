@@ -14,6 +14,42 @@ const DISTRACTING_DOMAINS = [
   "youtube.com",
   "www.youtube.com"
 ];
+const OFF_TASK_HINTS = [
+  "reddit",
+  "amazon",
+  "walmart",
+  "target",
+  "coupang",
+  "ebay",
+  "shopping",
+  "shop",
+  "store",
+  "game",
+  "games",
+  "steam",
+  "netflix",
+  "twitch",
+  "discord",
+  "facebook",
+  "twitter",
+  "x.com"
+];
+const STUDY_HINTS = [
+  ".edu",
+  "canvas",
+  "moodle",
+  "blackboard",
+  "coursera",
+  "edx",
+  "khanacademy",
+  "scholar.google",
+  "arxiv",
+  "jstor",
+  "overleaf",
+  "docs.google",
+  "drive.google",
+  "notion"
+];
 
 function formatMmSs(totalSeconds) {
   const s = Math.max(0, Math.floor(Number(totalSeconds) || 0));
@@ -22,11 +58,64 @@ function formatMmSs(totalSeconds) {
   return `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
 }
 
+function sendRuntimeMessage(message, callback) {
+  if (!chrome.runtime || !chrome.runtime.id) {
+    if (typeof callback === "function") {
+      callback(null);
+    }
+    return;
+  }
+
+  try {
+    chrome.runtime.sendMessage(message, (response) => {
+      if (chrome.runtime.lastError) {
+        if (typeof callback === "function") {
+          callback(null);
+        }
+        return;
+      }
+
+      if (typeof callback === "function") {
+        callback(response);
+      }
+    });
+  } catch {
+    if (typeof callback === "function") {
+      callback(null);
+    }
+  }
+}
+
 function matchesDomain(host, baseDomain) {
   return host === baseDomain || host.endsWith(`.${baseDomain}`);
 }
 
 function classifyDomain(domain) {
+  return classifyDomainWithCache(domain, {});
+}
+
+function classifyDomainWithCache(domain, classificationCache) {
+  const cachedLabel = classificationCache && typeof classificationCache === "object"
+    ? classificationCache[domain]
+    : null;
+
+  if (OFF_TASK_HINTS.some((hint) => domain.includes(hint))) {
+    return "distracting";
+  }
+  if (domain.endsWith(".edu")) {
+    return "study";
+  }
+  if (STUDY_HINTS.some((hint) => domain.includes(hint))) {
+    return "study";
+  }
+
+  if (cachedLabel === "1") {
+    return "distracting";
+  }
+  if (cachedLabel === "0") {
+    return "study";
+  }
+
   if (DISTRACTING_DOMAINS.some((base) => matchesDomain(domain, base))) {
     return "distracting";
   }
@@ -59,7 +148,7 @@ function renderStudyingTimer(totalStudySeconds) {
   timerEl.textContent = formatMmSs(totalStudySeconds);
 }
 
-function renderWebsiteList(websiteTotals) {
+function renderWebsiteList(websiteTotals, classificationCache) {
   const listEl = document.getElementById("website-list");
   if (!listEl) return;
 
@@ -80,7 +169,7 @@ function renderWebsiteList(websiteTotals) {
 
   for (const [domain, seconds] of rows) {
     const li = document.createElement("li");
-    const kind = classifyDomain(domain);
+    const kind = classifyDomainWithCache(domain, classificationCache);
     li.className = `website-row ${kind}`;
 
     const domainSpan = document.createElement("span");
@@ -98,22 +187,22 @@ function renderWebsiteList(websiteTotals) {
 }
 
 function refreshPopupData() {
-  chrome.runtime.sendMessage({ type: "GET_POPUP_DATA" }, (response) => {
+  sendRuntimeMessage({ type: "GET_POPUP_DATA" }, (response) => {
     if (!response || !response.ok) {
       renderTimerState("STOPPED", null);
       renderStudyingTimer(0);
-      renderWebsiteList({});
+      renderWebsiteList({}, {});
       return;
     }
 
     renderTimerState(response.timerState, response.pauseReason);
     renderStudyingTimer(response.totalStudySeconds || 0);
-    renderWebsiteList(response.websiteTotals || {});
+    renderWebsiteList(response.websiteTotals || {}, response.domainClassificationCache || {});
   });
 }
 
 function sendAction(actionType) {
-  chrome.runtime.sendMessage({ type: actionType }, () => {
+  sendRuntimeMessage({ type: actionType }, () => {
     refreshPopupData();
   });
 }
@@ -143,10 +232,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (openDashboard) {
     openDashboard.addEventListener("click", () => {
-      chrome.runtime.sendMessage({ type: "OPEN_DASHBOARD" });
+      sendRuntimeMessage({ type: "OPEN_DASHBOARD" });
     });
   }
 
   refreshPopupData();
-  window.setInterval(refreshPopupData, 1000);
+  const refreshIntervalId = window.setInterval(refreshPopupData, 1000);
+  window.addEventListener("beforeunload", () => {
+    window.clearInterval(refreshIntervalId);
+  });
 });
