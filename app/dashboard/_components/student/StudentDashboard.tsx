@@ -11,6 +11,9 @@ import { ProductivityRatio } from './ProductivityRatio';
 import { CourseStatsCards } from './CourseStatsCards';
 import { WeeklyAIDigest } from './WeeklyAIDigest';
 import { PomodoroTimer } from './PomodoroTimer';
+import { AgentChatWidget } from './AgentChatWidget';
+import { LiveActivityTracker } from './LiveActivityTracker';
+import { AIBehavioralNudge } from './AIBehavioralNudge';
 import { useDashboard } from '../../_lib/context';
 
 function formatStudyTime(totalSeconds: number): string {
@@ -39,6 +42,7 @@ export default function StudentDashboard() {
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
         <WeeklySummaryHero />
+        <AIBehavioralNudge />
         <BurnoutGauge />
         <LateNightSpikes />
         <DeadlineClustering />
@@ -46,8 +50,10 @@ export default function StudentDashboard() {
         <ProductivityRatio />
         <CourseStatsCards />
         <WeeklyAIDigest />
+        <LiveActivityTracker />
       </div>
       <PomodoroTimer />
+      <AgentChatWidget />
     </div>
   );
 }

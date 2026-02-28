@@ -9,3 +9,7 @@ pnpm-debug.log*
 .env
 .env.local
 .env*.local
+.vercel
+.venv/
+.orchestrate.env
+__pycache__/

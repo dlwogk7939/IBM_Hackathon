@@ -125,3 +125,35 @@ export interface ScalabilityMetrics {
   uptime: number;
   region: string;
 }
+
+/* ── Shared context sent from client → AI APIs ── */
+
+export interface SiteTime {
+  domain: string;
+  seconds: number;
+  category: 'study' | 'distracting' | 'other';
+}
+
+export interface StudentContext {
+  // ILAP / mock fields
+  burnoutScore: number;
+  burnoutTrend: 'rising' | 'falling' | 'stable';
+  burnoutChange: number;
+  weeklyHours: number;
+  studyStreak: number;
+  nightSessionCount: number;
+  bestDay: string;
+  bestDayHours: number;
+  peakFocusHour: string;
+  deadlines: { course: string; title: string; due: string; weight: number }[];
+  courseWorkload: { code: string; hours: number }[];
+
+  // Extension fields
+  extensionConnected: boolean;
+  timerState: string;
+  totalStudySeconds: number;
+  studySites: SiteTime[];
+  distractingSites: SiteTime[];
+  studySeconds: number;
+  distractingSeconds: number;
+}

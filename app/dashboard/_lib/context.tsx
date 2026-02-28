@@ -1,8 +1,13 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import * as mock from './mockData';
 import { useExtensionSync, type ExtensionSyncData } from './useExtensionSync';
+import {
+  blendBurnout, blendNightSessions, blendProductivity,
+  blendTimeBlocks, blendStudyStreak,
+} from './extensionBlend';
+import { buildStudentContext } from './buildStudentContext';
 
 export type Role = 'student' | 'educator';
 
@@ -25,6 +30,7 @@ const initialStudentData = {
   studyPlan: mock.studyPlan,
   extensionStatus: mock.extensionStatus,
   studyStreak: mock.studyStreak,
+  nudge: null as { nudge: string; type: 'focus' | 'break' | 'encouragement' | 'sleep' } | null,
 };
 
 const initialEducatorData = {
@@ -60,8 +66,12 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const [educatorData, setEducatorData] = useState(initialEducatorData);
   const extensionLive = useExtensionSync();
 
+  // Track previous extension connected state for transition detection
+  const prevConnectedRef = useRef(false);
+  const lastNudgeFetchRef = useRef(0);
+
+  // Initial fetch on mount (mock-only context)
   useEffect(() => {
-    // Build analytics context from processor data
     const burnout = mock.burnout;
     const nights = mock.nightSessions;
     const deadlines = mock.deadlines;
@@ -104,7 +114,6 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       })),
     };
 
-    // Fetch digest and study plan
     fetchGranite('digest', studentCtx).then(data => {
       if (data) setStudentData(prev => ({ ...prev, digest: data }));
     });
@@ -113,7 +122,6 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       if (data) setStudentData(prev => ({ ...prev, studyPlan: data }));
     });
 
-    // Build educator context for alerts
     const educatorCtx = {
       courseAnalytics: mock.engagementRows.map(row => ({
         course: row.course,
@@ -130,18 +138,58 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const mergedStudent = {
-    ...studentData,
-    extensionLive,
-    extensionStatus: extensionLive.connected
-      ? {
+  // Build merged student for context building
+  const mergedStudent = extensionLive.connected
+    ? {
+        ...studentData,
+        burnout: blendBurnout(studentData.burnout, extensionLive),
+        nightSessions: blendNightSessions(studentData.nightSessions, extensionLive),
+        productivity: blendProductivity(studentData.productivity, extensionLive),
+        timeBlocks: blendTimeBlocks(studentData.timeBlocks, extensionLive),
+        studyStreak: blendStudyStreak(studentData.studyStreak, extensionLive),
+        extensionLive,
+        extensionStatus: {
           connected: true,
           lastSync: extensionLive.lastSync,
           browser: 'Chrome',
           version: extensionLive.version,
-        }
-      : studentData.extensionStatus,
-  };
+        },
+      }
+    : { ...studentData, extensionLive };
+
+  // Re-fetch AI data when extension transitions disconnected → connected
+  // Also fetch nudge when connected with enough data, debounced to 5min
+  useEffect(() => {
+    const wasConnected = prevConnectedRef.current;
+    const isConnected = extensionLive.connected;
+    prevConnectedRef.current = isConnected;
+
+    // Transition: disconnected → connected — re-fetch digest & studyplan with real context
+    if (!wasConnected && isConnected) {
+      const ctx = buildStudentContext(mergedStudent as Parameters<typeof buildStudentContext>[0]);
+      fetchGranite('digest', ctx as unknown as Record<string, unknown>).then(data => {
+        if (data) setStudentData(prev => ({ ...prev, digest: data }));
+      });
+      fetchGranite('studyplan', ctx as unknown as Record<string, unknown>).then(data => {
+        if (data) setStudentData(prev => ({ ...prev, studyPlan: data }));
+      });
+    }
+
+    // Nudge: connected + >5min tracked + debounced to once per 5min
+    if (isConnected && extensionLive.totalStudySeconds >= 300) {
+      const now = Date.now();
+      if (now - lastNudgeFetchRef.current >= 5 * 60 * 1000) {
+        lastNudgeFetchRef.current = now;
+        const ctx = buildStudentContext(mergedStudent as Parameters<typeof buildStudentContext>[0]);
+        fetchGranite('nudge', ctx as unknown as Record<string, unknown>).then(data => {
+          if (data && data.nudge) {
+            setStudentData(prev => ({ ...prev, nudge: data }));
+          }
+        });
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [extensionLive.connected, extensionLive.totalStudySeconds]);
 
   return (
     <Ctx.Provider value={{ role, setRole, student: mergedStudent, educator: educatorData }}>

@@ -20,7 +20,7 @@ const DISTRACTING_DOMAINS = [
 ];
 
 // Update this URL when deployed (e.g., to IBM Code Engine URL)
-const DASHBOARD_URL = "http://localhost:3000/dashboard";
+const DASHBOARD_URL = "https://maintain-ai.vercel.app/dashboard";
 
 const TIMER_STATES = {
   RUNNING: "RUNNING",

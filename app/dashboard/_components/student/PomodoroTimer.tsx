@@ -111,7 +111,7 @@ export function PomodoroTimer() {
       <button
         onClick={() => setIsExpanded(true)}
         className={cn(
-          'fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium shadow-lg backdrop-blur-md transition-all hover:scale-105',
+          'fixed bottom-6 left-6 z-50 inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium shadow-lg backdrop-blur-md transition-all hover:scale-105',
           mode === 'break'
             ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
             : 'border-blue-500/30 bg-blue-500/10 text-blue-400',
@@ -133,7 +133,7 @@ export function PomodoroTimer() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-72 rounded-2xl border border-white/10 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-xl">
+    <div className="fixed bottom-6 left-6 z-50 w-72 rounded-2xl border border-white/10 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-xl">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">

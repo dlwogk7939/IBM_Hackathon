@@ -91,11 +91,55 @@ Each message should be specific, referencing actual numbers from the data.
 Return ONLY the JSON array, no markdown, no explanation.`;
 }
 
+function fmtSec(sec: number): string {
+  if (sec < 60) return `${sec}s`;
+  const m = Math.floor(sec / 60);
+  if (m < 60) return `${m}min`;
+  const h = Math.floor(m / 60);
+  const rm = m % 60;
+  return rm > 0 ? `${h}h ${rm}min` : `${h}h`;
+}
+
+function buildNudgePrompt(ctx: Record<string, unknown>): string {
+  const studySites = (ctx.studySites as { domain: string; seconds: number }[] | undefined) ?? [];
+  const distractingSites = (ctx.distractingSites as { domain: string; seconds: number }[] | undefined) ?? [];
+  const studyList = studySites.slice(0, 5).map(s => `${s.domain} (${fmtSec(s.seconds)})`).join(', ') || 'none';
+  const distractList = distractingSites.slice(0, 5).map(s => `${s.domain} (${fmtSec(s.seconds)})`).join(', ') || 'none';
+  const studySec = (ctx.studySeconds as number) ?? 0;
+  const distractSec = (ctx.distractingSeconds as number) ?? 0;
+  const total = studySec + distractSec;
+  const studyPct = total > 0 ? Math.round((studySec / total) * 100) : 0;
+  const hour = new Date().getHours();
+
+  return `You are an AI study wellness coach. Generate a single personalized behavioral nudge based on this live student data.
+
+Live Session Data:
+- Timer state: ${ctx.timerState}
+- Total study time: ${fmtSec((ctx.totalStudySeconds as number) ?? 0)}
+- Study sites: ${studyList}
+- Distracting sites: ${distractList}
+- Study/distraction ratio: ${studyPct}% study, ${100 - studyPct}% distraction
+- Burnout score: ${ctx.burnoutScore}/100 (trend: ${ctx.burnoutTrend})
+- Current hour: ${hour}:00 (${hour >= 22 || hour < 6 ? 'late night' : hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'})
+
+Return ONLY a valid JSON object (not an array) with this shape:
+{"nudge": "<1-2 sentence personalized advice>", "type": "<focus|break|encouragement|sleep>"}
+
+Choose type based on context:
+- "focus" if distraction ratio is high
+- "break" if study time > 2 hours without break
+- "sleep" if it's late night (after 10 PM)
+- "encouragement" if study ratio is good
+
+The nudge should reference specific sites or data from above. Be warm and concise.
+Return ONLY the JSON object, no markdown, no explanation.`;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { action, context: ctx } = body as {
-      action: 'digest' | 'studyplan' | 'alerts';
+      action: 'digest' | 'studyplan' | 'alerts' | 'nudge';
       context: Record<string, unknown>;
     };
 
@@ -116,13 +160,27 @@ export async function POST(req: NextRequest) {
       case 'alerts':
         prompt = buildAlertsPrompt(ctx);
         break;
+      case 'nudge':
+        prompt = buildNudgePrompt(ctx);
+        break;
       default:
         return NextResponse.json({ fallback: true, error: 'Unknown action' });
     }
 
     const raw = await callGranite(token, prompt);
 
-    // Extract JSON from response — handle cases where model wraps in markdown
+    // Nudge returns a JSON object, others return arrays
+    if (action === 'nudge') {
+      const objMatch = raw.match(/\{[\s\S]*\}/);
+      if (!objMatch) {
+        console.error('Granite returned non-JSON for nudge:', raw);
+        return NextResponse.json({ fallback: true, error: 'Invalid JSON from Granite' });
+      }
+      const parsed = JSON.parse(objMatch[0]);
+      return NextResponse.json({ fallback: false, data: parsed });
+    }
+
+    // Extract JSON array from response
     const jsonMatch = raw.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
       console.error('Granite returned non-JSON:', raw);
