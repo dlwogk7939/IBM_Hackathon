@@ -594,7 +594,7 @@ export default function LandingPage() {
             </a>
           </div>
           <p className="fade-up mt-4 text-slate-400 text-[13px]">
-            Free for students &middot; Syncs with Google Calendar &amp; Outlook
+            Free for students &middot; Works alongside your existing tools
             &middot; No data sold
           </p>
         </div>
@@ -789,7 +789,7 @@ export default function LandingPage() {
               <div className="space-y-2 text-slate-400 text-sm">
                 <p>&mdash; Automatic late-night spike detection</p>
                 <p>&mdash; Recovery window recommendations</p>
-                <p>&mdash; 74% accuracy vs. self-reported burnout</p>
+                <p>&mdash; Multi-signal composite scoring via IBM Granite</p>
               </div>
             </div>
             <div
@@ -818,7 +818,7 @@ export default function LandingPage() {
                 of your time was actually study.
               </p>
               <div className="space-y-2 text-slate-400 text-sm">
-                <p>&mdash; Auto-classifies 10,000+ domains</p>
+                <p>&mdash; Smart domain classification (study vs. distraction)</p>
                 <p>&mdash; Session-by-session breakdown</p>
                 <p>
                   &mdash; Distraction alerts when ratio drops below threshold
@@ -843,14 +843,15 @@ export default function LandingPage() {
                 Deadline Intelligence
               </h3>
               <p className="text-slate-400 leading-relaxed mb-5">
-                Connects to Google Calendar and Outlook via OAuth. Maps
-                deadlines onto study patterns and alerts you when assignments
-                cluster&nbsp;&mdash; a week out, not the night before.
+                Maps deadlines onto study patterns and alerts you when
+                assignments cluster&nbsp;&mdash; a week out, not the night
+                before. Designed for integration with campus LMS and calendar
+                systems.
               </p>
               <div className="space-y-2 text-slate-400 text-sm">
-                <p>&mdash; Google Calendar + Microsoft Outlook</p>
-                <p>&mdash; Canvas LMS assignment sync</p>
-                <p>&mdash; Deadline cluster alerts 7 days out</p>
+                <p>&mdash; Deadline cluster detection (3+ in 72 hours)</p>
+                <p>&mdash; Weight-aware prioritization via IBM Granite</p>
+                <p>&mdash; LMS-ready architecture (Canvas, Blackboard)</p>
               </div>
             </div>
             <div
@@ -1042,9 +1043,9 @@ export default function LandingPage() {
             </div>
             <div className="fade-up bg-[#232A3B] rounded-xl p-6" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
               <Globe className="w-5 h-5 text-[#306CB5] mb-3" />
-              <p className="text-slate-100 font-semibold mb-2">Calendar + LMS Integration</p>
+              <p className="text-slate-100 font-semibold mb-2">LMS-Ready Architecture</p>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Google Calendar, Outlook, and Canvas LMS via OAuth 2.0. Maps real deadlines onto study patterns for accurate clustering alerts.
+                Standardized ILAP data schema maps to Canvas, Blackboard, and Moodle APIs. Designed for institutional deployment with OAuth 2.0 integration points.
               </p>
             </div>
           </div>
