@@ -31,6 +31,7 @@ const initialStudentData = {
   extensionStatus: mock.extensionStatus,
   studyStreak: mock.studyStreak,
   nudge: null as { nudge: string; type: 'focus' | 'break' | 'encouragement' | 'sleep' } | null,
+  rebalance: null as { suggestion: string; shifts: { from: string; to: string; hours: number }[]; projectedBurnoutReduction: number } | null,
 };
 
 const initialEducatorData = {
@@ -120,6 +121,10 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
 
     fetchGranite('studyplan', studentCtx).then(data => {
       if (data) setStudentData(prev => ({ ...prev, studyPlan: data }));
+    });
+
+    fetchGranite('rebalance', studentCtx).then(data => {
+      if (data && data.suggestion) setStudentData(prev => ({ ...prev, rebalance: data }));
     });
 
     const educatorCtx = {

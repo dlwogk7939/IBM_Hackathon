@@ -135,11 +135,35 @@ The nudge should reference specific sites or data from above. Be warm and concis
 Return ONLY the JSON object, no markdown, no explanation.`;
 }
 
+function buildRebalancePrompt(ctx: Record<string, unknown>): string {
+  const courseWorkload = (ctx.courseWorkload as { code: string; hours: number }[]) ?? [];
+  const burnoutScore = (ctx.burnoutScore as number) ?? 50;
+  const burnoutTrend = (ctx.burnoutTrend as string) ?? 'stable';
+  const weeklyHours = (ctx.weeklyHours as number) ?? 0;
+
+  return `You are an AI study optimization coach. Analyze this student's course workload distribution and suggest a specific rebalancing plan to reduce burnout risk.
+
+Student Data:
+- Overall burnout: ${burnoutScore}/100 (trend: ${burnoutTrend})
+- Total weekly hours: ${weeklyHours}h
+- Course breakdown: ${courseWorkload.map(c => `${c.code}: ${c.hours}h/week`).join(', ')}
+
+Return ONLY a valid JSON object (not an array) with this shape:
+{"suggestion": "<2-3 sentence specific rebalancing advice referencing actual course codes and hours>", "shifts": [{"from": "<course code>", "to": "<course code>", "hours": <number>}], "projectedBurnoutReduction": <number 1-15>}
+
+Rules:
+- Suggest shifting hours from the highest-hour course to lower-hour courses
+- The projected burnout reduction should be realistic (1-15 points)
+- Reference specific course codes and hours in the suggestion
+- Be actionable and specific, not generic
+Return ONLY the JSON object, no markdown, no explanation.`;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { action, context: ctx } = body as {
-      action: 'digest' | 'studyplan' | 'alerts' | 'nudge';
+      action: 'digest' | 'studyplan' | 'alerts' | 'nudge' | 'rebalance';
       context: Record<string, unknown>;
     };
 
@@ -163,14 +187,17 @@ export async function POST(req: NextRequest) {
       case 'nudge':
         prompt = buildNudgePrompt(ctx);
         break;
+      case 'rebalance':
+        prompt = buildRebalancePrompt(ctx);
+        break;
       default:
         return NextResponse.json({ fallback: true, error: 'Unknown action' });
     }
 
     const raw = await callGranite(token, prompt);
 
-    // Nudge returns a JSON object, others return arrays
-    if (action === 'nudge') {
+    // Nudge and rebalance return JSON objects, others return arrays
+    if (action === 'nudge' || action === 'rebalance') {
       const objMatch = raw.match(/\{[\s\S]*\}/);
       if (!objMatch) {
         console.error('Granite returned non-JSON for nudge:', raw);

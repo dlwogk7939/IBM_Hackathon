@@ -14,6 +14,8 @@ import { PomodoroTimer } from './PomodoroTimer';
 import { AgentChatWidget } from './AgentChatWidget';
 import { LiveActivityTracker } from './LiveActivityTracker';
 import { AIBehavioralNudge } from './AIBehavioralNudge';
+import { DemoSimulator } from './DemoSimulator';
+import { StudyRebalancer } from './StudyRebalancer';
 import { useDashboard } from '../../_lib/context';
 
 function formatStudyTime(totalSeconds: number): string {
@@ -36,6 +38,7 @@ export default function StudentDashboard() {
               {formatStudyTime(extensionLive.totalStudySeconds)} studied
             </span>
           )}
+          {!extensionLive.connected && <DemoSimulator />}
           <StudyStreak />
           <ExtensionStatus />
         </div>
@@ -50,6 +53,7 @@ export default function StudentDashboard() {
         <ProductivityRatio />
         <CourseStatsCards />
         <WeeklyAIDigest />
+        <StudyRebalancer />
         <LiveActivityTracker />
       </div>
       <PomodoroTimer />
