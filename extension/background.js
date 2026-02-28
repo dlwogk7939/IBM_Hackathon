@@ -19,45 +19,8 @@ const DISTRACTING_DOMAINS = [
   "www.youtube.com"
 ];
 
-const DASHBOARD_URL = "https://naver.com";
-const CLASSIFIER_URL = "http://localhost:3000/classify";
-const CLASSIFICATION_CACHE_VERSION = 3;
-const OFF_TASK_HINTS = [
-  "reddit",
-  "amazon",
-  "walmart",
-  "target",
-  "coupang",
-  "ebay",
-  "shopping",
-  "shop",
-  "store",
-  "game",
-  "games",
-  "steam",
-  "netflix",
-  "twitch",
-  "discord",
-  "facebook",
-  "twitter",
-  "x.com"
-];
-const STUDY_HINTS = [
-  ".edu",
-  "canvas",
-  "moodle",
-  "blackboard",
-  "coursera",
-  "edx",
-  "khanacademy",
-  "scholar.google",
-  "arxiv",
-  "jstor",
-  "overleaf",
-  "docs.google",
-  "drive.google",
-  "notion"
-];
+// Update this URL when deployed (e.g., to IBM Code Engine URL)
+const DASHBOARD_URL = "https://maintain-ai.vercel.app/dashboard";
 
 const TIMER_STATES = {
   RUNNING: "RUNNING",

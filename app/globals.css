@@ -3,17 +3,57 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
+  --sl-navy: #111827;
+  --sl-electric: #306CB5;
+  --sl-amber: #F59E0B;
+  --sl-emerald: #10B981;
+  --sl-rose: #F43F5E;
+  --sl-glass: rgba(255, 255, 255, 0.06);
+  --sl-glass-border: rgba(255, 255, 255, 0.10);
+  --sl-glass-hover: rgba(255, 255, 255, 0.12);
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-[#1A1F2E] text-slate-200 antialiased;
 }
 
-.card {
-  @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm;
+/* Glass card utility for the dashboard */
+.glass-card {
+  background: var(--sl-glass);
+  border: 1px solid var(--sl-glass-border);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-.metric-value {
-  @apply text-2xl font-semibold text-brand-700;
+.glass-card:hover {
+  background: var(--sl-glass-hover);
+}
+
+/* Shimmer loading for AI text */
+.shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.10) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* Custom scrollbar for dark dashboard */
+.sl-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.sl-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sl-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+}
+.sl-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
